@@ -6,24 +6,39 @@ export default function App() {
   const [filmek, setFilmek] = useState([])
 
   const filmLekerdez = async () => {
-    const x = await fetch(`${Ipcim}/film_lekerdez`)
-    const y = await x.json()
-
-    setFilmek(y)
+    try {
+      const response = await fetch(`${Ipcim}/film_lekerdez`);
+      if (!response.ok) {
+        throw new Error('Hiba a filmek lekérdezésekor: ' + response.statusText);
+      }
+      const data = await response.json();
+      setFilmek(data);
+    } catch (error) {
+      Alert.alert('Hiba', error.message);
+      console.error('Film lekérdezési hiba: ', error);
+    }
   }
 
   const szavaz = async (id) => {
-    const x = await fetch(`${Ipcim}/szavaz`, {
-      method: "POST",
+    try {
+      const response = await fetch(`${Ipcim}/szavaz`, {
+        method: "POST",
         headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            "bemenet": id
+          "bemenet": id
         })
-    })
-    Alert.alert('', 'Sikeres szavazás!')
+      });
+      if (!response.ok) {
+        throw new Error('Hiba a szavazás során: ' + response.statusText);
+      }
+      Alert.alert('', 'Sikeres szavazás!');
+    } catch (error) {
+      Alert.alert('Hiba', error.message);
+      console.error('Szavazási hiba: ', error);
+    }
   }
 
   useEffect(() => {filmLekerdez()}, [])
@@ -43,7 +58,7 @@ export default function App() {
         style={styles.lista}
         data={filmek}
         renderItem={({item}) => <Item id={item.film_id} cim={item.film_cim} kep={item.film_kep}/>}
-        keyExtractor={item => item.film_id}
+        keyExtractor={item => item.film_id.toString()}
       />
     </SafeAreaView>
     
